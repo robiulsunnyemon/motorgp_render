@@ -10,7 +10,7 @@ ALGORITHM = os.getenv('ALGORITHM')
 
 def create_access_token(data:dict):
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=10000)
     to_encode.update({"exp": expire})
 
     encoded_token=jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

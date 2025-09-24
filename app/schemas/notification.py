@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from typing import Optional
 
 class NotificationBase(BaseModel):
-    user_id: int
     race_id: int
     notification_hour: int
 

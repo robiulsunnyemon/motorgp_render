@@ -5,6 +5,7 @@ from typing import List
 from app.db.db import get_db
 from app.models.notification import NotificationModel
 from app.schemas.notification import NotificationCreate, NotificationResponse, NotificationUpdate
+from app.utils.user_info import get_user_info
 
 notification_router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
@@ -26,8 +27,12 @@ def get_notification(notification_id: int, db: Session = Depends(get_db)):
 
 # Create notification
 @notification_router.post("/", response_model=NotificationResponse, status_code=status.HTTP_201_CREATED)
-def create_notification(notification: NotificationCreate, db: Session = Depends(get_db)):
-    db_notification = NotificationModel(**notification.model_dump())
+def create_notification(notification: NotificationCreate, db: Session = Depends(get_db),user: dict = Depends(get_user_info)):
+    db_notification = NotificationModel(
+        user_id=user["user_id"],
+        race_id=notification.race_id,
+        notification_hour=notification.notification_hour,
+    )
     db.add(db_notification)
     db.commit()
     db.refresh(db_notification)

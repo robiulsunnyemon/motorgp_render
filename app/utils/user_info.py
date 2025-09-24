@@ -20,10 +20,9 @@ def get_user_info(token: str = Depends(oauth2_scheme)):
 
 
         email: str = payload.get("sub")
-        user_id: int = payload.get(
-            "user_id")
+        user_id: int = payload.get("user_id")
 
-        if email is None  or user_id is None:
+        if email is None or user_id is None:
             raise credentials_exception
 
     except JWTError:

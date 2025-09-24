@@ -7,7 +7,6 @@ import os
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials
-
 from app.db.db import engine, Base
 from app.routers.race import race_router
 from app.routers.event import event_router
@@ -19,13 +18,10 @@ from app.utils.schedular_push_notification import send_scheduled_notifications
 
 # Load environment variables
 load_dotenv()
-
-# Scheduler setup
 scheduler = BackgroundScheduler()
-scheduler.add_job(send_scheduled_notifications, CronTrigger(minute="*/1"))
+scheduler.add_job(send_scheduled_notifications, CronTrigger(minute='*/1'))
 
-
-# Lifespan context manager for FastAPI
+# Lifespan context manager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if not scheduler.running:
@@ -33,15 +29,14 @@ async def lifespan(app: FastAPI):
     yield
     scheduler.shutdown()
 
-
 # FastAPI app
 app = FastAPI(lifespan=lifespan)
 
 
-# DB table creation on startup
-@app.on_event("startup")
-async def startup_event():
-    Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+
+
+
 
 
 # Firebase initialization

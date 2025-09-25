@@ -19,14 +19,14 @@ def get_user_info(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 
-        email: str = payload.get("sub")
-        user_id: int = payload.get("user_id")
+        uid: str = payload.get("sub")
+        fcm_token: int = payload.get("FCMToken")
 
-        if email is None or user_id is None:
+        if uid is None or fcm_token is None:
             raise credentials_exception
 
     except JWTError:
 
         raise credentials_exception
 
-    return {"email": email, "user_id": user_id}
+    return {"uid": uid, "fcm_token": fcm_token}

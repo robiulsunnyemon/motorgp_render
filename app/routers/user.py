@@ -1,12 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException,status
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserRead
 from app.db.db import get_db
 from app.models.user import UserModel
 from sqlalchemy.orm import Session
 from app.utils.token_generation import create_access_token
 from app.utils.user_info import get_user_info
 from app.models.fcm_token import FCMTokenModel
+from typing import List
+
+
+
 router = APIRouter(prefix="/user", tags=["User"])
+
 
 
 @router.post("/registration", status_code=status.HTTP_201_CREATED)
@@ -50,7 +55,10 @@ async def registration(user: UserCreate, db: Session = Depends(get_db)):
     }
 
 
-
+@router.get("/user", response_model=List[UserRead],status_code=status.HTTP_200_OK)
+async def get_all_users(db: Session = Depends(get_db)):
+    users = db.query(UserModel).all()
+    return users
 
 
 @router.delete("/delete",status_code=status.HTTP_200_OK)

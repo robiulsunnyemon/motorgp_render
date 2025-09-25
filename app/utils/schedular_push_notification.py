@@ -82,7 +82,7 @@ def send_scheduled_notifications():
 
                         for user_token_obj in user_tokens_objs:
                             notification_box_entry = NotificationBoxModel(
-                                user_id=notification.user_id,
+                                user_id=user_token_obj.user_id,
                                 notification_title=title,
                                 notification_body=body
                             )

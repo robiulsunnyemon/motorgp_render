@@ -3,6 +3,7 @@ from firebase_admin import messaging
 from sqlalchemy.orm import Session
 from typing import List
 from app.db.db import get_db
+from app.models.notification import NotificationModel
 from app.models.promotions import PromotionModel
 from app.schemas.promotions import PromotionCreate, PromotionResponse, PromotionUpdate
 from app.models.fcm_token import FCMTokenModel
@@ -53,6 +54,15 @@ def create_promotion(promotion: PromotionCreate, db: Session = Depends(get_db)):
 
         response = messaging.send_each_for_multicast(message)
         print(f'{response.success_count} messages were sent successfully')
+        for token_obj in db_tokens:
+            notification = NotificationModel(
+                user_id=token_obj.user_id,
+                title=promotion.title,
+                message=promotion.description,
+            )
+            db.add(notification)
+        db.commit()
+
 
     except Exception as e:
         print(f"Failed to send push notifications: {e}")

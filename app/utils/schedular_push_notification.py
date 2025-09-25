@@ -2,6 +2,7 @@ from firebase_admin import messaging
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 from app.db.db import get_db
+from app.models.notification_box import NotificationBoxModel
 from app.models.race import RaceModel
 from app.models.event import EventModel
 from app.models.fcm_token import FCMTokenModel
@@ -78,6 +79,18 @@ def send_scheduled_notifications():
                         print(f"[DEBUG] {response.success_count} messages sent for event {event.id}.")
                         if response.failure_count > 0:
                             print(f"[DEBUG] {response.failure_count} messages failed. Responses: {response.responses}")
+
+                        for user_token_obj in user_tokens_objs:
+                            notification_box_entry = NotificationBoxModel(
+                                user_id=notification.user_id,
+                                notification_title=title,
+                                notification_body=body
+                            )
+                            db.add(notification_box_entry)
+                        db.commit()
+                        print(f"[DEBUG] Notifications saved in NotificationBoxModel for user {notification.user_id}")
+
+
 
                     except Exception as e:
                         print(f"[ERROR] Failed to send notification for event {event.id}: {e}")

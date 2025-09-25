@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status,HTTPException
 from sqlalchemy.orm import Session
 from app.models.user import UserModel
 from app.db.db import get_db
@@ -21,6 +21,8 @@ def get_notification_box_list(db: Session = Depends(get_db)):
 def get_notification_box_me(db: Session = Depends(get_db), user: dict = Depends(get_user_info)):
     # Current user info
     uid = user["uid"]
+    if not  uid:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,)
     db_user = db.query(UserModel).filter(UserModel.uid == uid).first()
     if not db_user:
         return []

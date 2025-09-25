@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from app.models.user import UserModel
 
 from app.db.db import get_db
 from app.models.notification import NotificationModel
@@ -28,8 +29,12 @@ def get_notification(notification_id: int, db: Session = Depends(get_db)):
 # Create notification
 @notification_router.post("/", response_model=NotificationResponse, status_code=status.HTTP_201_CREATED)
 def create_notification(notification: NotificationCreate, db: Session = Depends(get_db),user: dict = Depends(get_user_info)):
+    db_user = db.query(UserModel).filter(UserModel.uid == user["uid"]).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     db_notification = NotificationModel(
-        user_id=user["user_id"],
+        user_id=db_user.id,
         race_id=notification.race_id,
         notification_hour=notification.notification_hour,
     )

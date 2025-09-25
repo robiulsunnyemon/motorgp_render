@@ -20,7 +20,7 @@ def get_user_info(token: str = Depends(oauth2_scheme)):
 
 
         uid: str = payload.get("sub")
-        fcm_token: int = payload.get("FCMToken")
+        fcm_token: str = payload.get("fcmToken")
 
         if uid is None or fcm_token is None:
             raise credentials_exception

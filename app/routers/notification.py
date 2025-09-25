@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.models.user import UserModel
-
+from sqlalchemy import and_
 from app.db.db import get_db
 from app.models.notification import NotificationModel
-from app.schemas.notification import NotificationCreate, NotificationResponse, NotificationUpdate
+from app.schemas.notification import NotificationCreate, NotificationResponse, NotificationUpdate, NotificationDelete
 from app.utils.user_info import get_user_info
 
 notification_router = APIRouter(prefix="/notifications", tags=["Notifications"])
@@ -68,4 +68,30 @@ def delete_notification(notification_id: int, db: Session = Depends(get_db)):
 
     db.delete(notification)
     db.commit()
+    return
+
+
+@notification_router.delete("/user/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_notification(
+        data: NotificationDelete,
+        db: Session = Depends(get_db),
+        user: dict = Depends(get_user_info)
+):
+    db_user = db.query(UserModel).filter(UserModel.uid == user["uid"]).first()
+
+    notifications = db.query(NotificationModel).filter(
+        and_(
+            NotificationModel.notification_hour == data.notification_hour,
+            NotificationModel.race_id == data.race_id,
+            NotificationModel.user_id == db_user.id
+        )
+    ).all()
+
+    if not notifications:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found")
+
+    for notification in notifications:
+        db.delete(notification)
+    db.commit()  # commit একবারই বাইরে করা ভালো
+
     return

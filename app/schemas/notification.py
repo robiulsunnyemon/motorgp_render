@@ -6,6 +6,9 @@ class NotificationBase(BaseModel):
     race_id: int
     notification_hour: int
 
+class NotificationDelete(NotificationBase):
+    pass
+
 class NotificationCreate(NotificationBase):
     pass
 

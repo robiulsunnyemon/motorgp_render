@@ -25,33 +25,35 @@ async def registration(user: UserCreate, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(new_user)
 
-        # fcm token handle
-        db_fcm_token_user = db.query(FCMTokenModel).filter(
-            FCMTokenModel.token == new_user.fcmToken
-        ).first()
-        if db_fcm_token_user is None and new_user.fcmToken:
-            new_token = FCMTokenModel(
-                user_id=new_user.id,
-                token=new_user.fcmToken
-            )
-            db.add(new_token)
-            db.commit()
-            db.refresh(new_token)
-
+        new_fcm_token_user = FCMTokenModel(
+            user_id=new_user.id,
+            token=new_user.fcmToken
+        )
+        db.add(new_fcm_token_user)
+        db.commit()
+        db.refresh(new_fcm_token_user)
         uid = new_user.uid
-        fcm_token = new_user.fcmToken
-        status_code_return = status.HTTP_201_CREATED
+        fcm_token = new_fcm_token_user.fcmToken
+
     else:
-        # পুরাতন ইউজার
-        uid = db_user.uid
-        fcm_token = db_user.fcmToken
-        status_code_return = status.HTTP_200_OK
+        db_user.fcmToken = user.fcmToken
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        db_fcm_token_user = db.query(FCMTokenModel).filter_by(user_id=db_user.id).first()
+        db_fcm_token_user.token = db_user.fcmToken
+        db.add(db_fcm_token_user)
+        db.commit()
+        db.refresh(db_fcm_token_user)
+        uid=db_user.uid
+        fcm_token=db_fcm_token_user.token
+
 
     token = create_access_token(data={"sub": uid, "fcmToken": fcm_token})
     return {
         "access_token": token,
         "token_type": "bearer",
-        "status": status_code_return
+
     }
 
 

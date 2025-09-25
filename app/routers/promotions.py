@@ -31,30 +31,40 @@ def get_promotion(promotion_id: int, db: Session = Depends(get_db)):
 @promotion_router.post("/", response_model=PromotionResponse, status_code=status.HTTP_201_CREATED)
 def create_promotion(promotion: PromotionCreate, db: Session = Depends(get_db)):
 
+    print("👉 Step 1: Creating promotion in DB")
     # 1️⃣ প্রোমোশন ডাটাবেজে সেইভ
     db_promotion = PromotionModel(**promotion.model_dump())
     db.add(db_promotion)
     db.commit()
     db.refresh(db_promotion)
+    print(f"✅ Promotion saved with ID: {db_promotion.id}, Title: {db_promotion.title}")
 
     # 2️⃣ ব্যবহারকারীর FCM টোকেন নিয়ে আসা
+    print("👉 Step 2: Fetching FCM tokens from DB")
     db_tokens = db.query(FCMTokenModel).all()
+    print(f"🔎 Found {len(db_tokens)} FCM tokens")
+
     if not db_tokens:
-        print("No FCM tokens found. Promotion created but no notifications sent.")
+        print("⚠️ No FCM tokens found. Promotion created but no notifications sent.")
         return db_promotion
 
     # 3️⃣ NotificationBox এ নোটিফিকেশন সেইভ করা
+    print("👉 Step 3: Saving notifications in NotificationBox")
     for token_obj in db_tokens:
+        print(f"   - Saving notification for user_id={token_obj.user_id}, token={token_obj.token[:15]}...")
         notification = NotificationBoxModel(
             user_id=token_obj.user_id,
             notification_title=promotion.title,
             notification_body=promotion.description,
         )
         db.add(notification)
-    db.commit()  # ✅ DB commit আগে
+    db.commit()
+    print("✅ Notifications saved in NotificationBox")
 
     # 4️⃣ FCM push notification পাঠানো
+    print("👉 Step 4: Sending push notifications via FCM")
     tokens = [token.token for token in db_tokens]
+    print(f"🔎 Total tokens to send: {len(tokens)}")
     try:
         message = messaging.MulticastMessage(
             notification=messaging.Notification(
@@ -64,9 +74,13 @@ def create_promotion(promotion: PromotionCreate, db: Session = Depends(get_db)):
             tokens=tokens,
         )
         response = messaging.send_each_for_multicast(message)
-        print(f'{response.success_count} messages were sent successfully')
+        print(f"✅ Push response: success={response.success_count}, failure={response.failure_count}")
+        if response.failure_count > 0:
+            for idx, resp in enumerate(response.responses):
+                if not resp.success:
+                    print(f"   ❌ Failed for token={tokens[idx][:15]}... Error={resp.exception}")
     except Exception as e:
-        print(f"Failed to send push notifications: {e}")
+        print(f"🔥 Exception while sending push notifications: {e}")
 
     return db_promotion
 

@@ -15,7 +15,7 @@ from app.routers.notification import notification_router
 from app.routers.promotions import promotion_router
 from app.routers.fcm_token import fcm_token_router
 from app.utils.schedular_push_notification import send_scheduled_notifications
-
+from app.routers.notification_box import notification_box_router
 # Load environment variables
 load_dotenv()
 scheduler = BackgroundScheduler()
@@ -71,3 +71,4 @@ app.include_router(user_router)
 app.include_router(notification_router)
 app.include_router(promotion_router)
 app.include_router(fcm_token_router)
+app.include_router(notification_box_router)

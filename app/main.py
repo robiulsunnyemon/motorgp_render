@@ -16,6 +16,14 @@ from app.routers.promotions import promotion_router
 from app.routers.fcm_token import fcm_token_router
 from app.utils.schedular_push_notification import send_scheduled_notifications
 from app.routers.notification_box import notification_box_router
+
+from fastapi.middleware.cors import CORSMiddleware
+
+
+
+
+
+
 # Load environment variables
 load_dotenv()
 scheduler = BackgroundScheduler()
@@ -31,6 +39,18 @@ async def lifespan(app: FastAPI):
 
 # FastAPI app
 app = FastAPI(lifespan=lifespan)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+
 
 #Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)

@@ -13,6 +13,6 @@ class EventModel(Base):
     location = Column(String)
     created_at = Column(DateTime(timezone=True), default=func.now())
     updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
-    started_at = Column(DateTime(timezone=True))  # ✅ timezone-aware
+    started_at = Column(DateTime(timezone=True))
 
     race = relationship("RaceModel", back_populates="events")

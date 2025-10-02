@@ -62,8 +62,8 @@ def send_scheduled_notifications():
                         print(f"[DEBUG] No race found for event {event.id}, skipping notification.")
                         continue
 
-                    title = f"{race.name} Event Alert"
-                    body = f"The {event.location} event is starting in {notification.notification_hour} hours!"
+                    title = "Race Reminder!"
+                    body = f"{race.name} at {event.location} is on {event.tv_broadcast_chanel} in {notification.notification_hour} hour."
                     print(f"[DEBUG] Sending notification: {title} - {body}")
 
                     try:

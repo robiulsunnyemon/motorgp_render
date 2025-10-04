@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 from typing import List
 
 from app.schemas.event import EventResponse
@@ -15,7 +15,7 @@ class RaceCreate(RaceBase):
     pass
 
 
-class RaceUpdate(BaseModel):   # <-- নতুন Update schema
+class RaceUpdate(BaseModel):   # Update schema
     name: Optional[str] = None
     image_logo: Optional[str] = None
 
@@ -26,5 +26,4 @@ class RaceResponse(RaceBase):
     updated_at: datetime
     events: Optional[List[EventResponse]] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
